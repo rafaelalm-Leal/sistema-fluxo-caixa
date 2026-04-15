@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from app.database import get_db
 from app.models.category import Category
@@ -69,7 +69,22 @@ def criar_movimentacao(transaction: TransactionCreate, db: Session = Depends(get
 
 @router.get("")
 def listar_movimentacoes(db: Session = Depends(get_db)):
-    movimentacoes = db.query(Transaction).all()
+    usuario_criador = aliased(User)
+    usuario_editor = aliased(User)
+
+    movimentacoes = (
+        db.query(
+            Transaction,
+            Category.nome.label("categoria_nome"),
+            usuario_criador.nome.label("criado_por_nome"),
+            usuario_editor.nome.label("atualizado_por_nome")
+        )
+        .join(Category, Transaction.categoria_id == Category.id)
+        .join(usuario_criador, Transaction.created_by == usuario_criador.id)
+        .join(usuario_editor, Transaction.updated_by == usuario_editor.id)
+        .order_by(Transaction.data_movimentacao.desc(), Transaction.id.desc())
+        .all()
+    )
 
     return [
         {
@@ -79,14 +94,16 @@ def listar_movimentacoes(db: Session = Depends(get_db)):
             "valor": str(movimentacao.valor),
             "data_movimentacao": str(movimentacao.data_movimentacao),
             "categoria_id": movimentacao.categoria_id,
+            "categoria_nome": categoria_nome,
             "forma_pagamento": movimentacao.forma_pagamento,
             "observacao": movimentacao.observacao,
             "created_by": movimentacao.created_by,
+            "criado_por_nome": criado_por_nome,
             "updated_by": movimentacao.updated_by,
+            "atualizado_por_nome": atualizado_por_nome,
         }
-        for movimentacao in movimentacoes
+        for movimentacao, categoria_nome, criado_por_nome, atualizado_por_nome in movimentacoes
     ]
-
 
 @router.get("/historico")
 def historico_movimentacoes(
