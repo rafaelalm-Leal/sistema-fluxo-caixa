@@ -9,6 +9,7 @@ from app.models.category import Category
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.schemas.transaction import TransactionCreate, TransactionUpdate
+from app.enums import TipoMovimentacao
 
 router = APIRouter(prefix="/transactions", tags=["Transactions"])
 
@@ -113,9 +114,19 @@ def historico_movimentacoes(
     categoria_id: int | None = Query(default=None),
     db: Session = Depends(get_db)
 ):
+    usuario_criador = aliased(User)
+    usuario_editor = aliased(User)
+
     query = (
-        db.query(Transaction, Category.nome)
+        db.query(
+            Transaction,
+            Category.nome.label("categoria_nome"),
+            usuario_criador.nome.label("criado_por_nome"),
+            usuario_editor.nome.label("editado_por_nome")
+        )
         .join(Category, Transaction.categoria_id == Category.id)
+        .join(usuario_criador, Transaction.created_by == usuario_criador.id)
+        .join(usuario_editor, Transaction.updated_by == usuario_editor.id)
     )
 
     if data_inicio:
@@ -137,7 +148,7 @@ def historico_movimentacoes(
 
     historico_agrupado = {}
 
-    for movimentacao, nome_categoria in resultados:
+    for movimentacao, categoria_nome, criado_por_nome, atualizado_por_nome in resultados:
         data_str = str(movimentacao.data_movimentacao)
 
         if data_str not in historico_agrupado:
@@ -149,7 +160,7 @@ def historico_movimentacoes(
                 "movimentacoes": []
             }
 
-        if movimentacao.tipo == "entrada":
+        if movimentacao.tipo == TipoMovimentacao.ENTRADA:
             historico_agrupado[data_str]["entradas_dia"] += movimentacao.valor
             historico_agrupado[data_str]["saldo_dia"] += movimentacao.valor
         else:
@@ -162,11 +173,13 @@ def historico_movimentacoes(
             "descricao": movimentacao.descricao,
             "valor": str(movimentacao.valor),
             "categoria_id": movimentacao.categoria_id,
-            "categoria_nome": nome_categoria,
+            "categoria_nome": categoria_nome,
             "forma_pagamento": movimentacao.forma_pagamento,
             "observacao": movimentacao.observacao,
             "created_by": movimentacao.created_by,
-            "updated_by": movimentacao.updated_by
+            "criado_por_nome": criado_por_nome,
+            "updated_by": movimentacao.updated_by,
+            "atualizado_por_nome": atualizado_por_nome
         })
 
     resposta = []
