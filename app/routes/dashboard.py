@@ -43,7 +43,7 @@ def resumo_dashboard(db: Session = Depends(get_db)):
     total_entradas_geral = (
         db.query(func.coalesce(func.sum(Transaction.valor), Decimal("0.00")))
         .filter(Transaction.tipo == TipoMovimentacao.ENTRADA)
-        .SCALAR()
+        .scalar()
     )
 
     total_saida_geral = (
@@ -56,8 +56,8 @@ def resumo_dashboard(db: Session = Depends(get_db)):
 
     categoria_maior_gasto = (
         db.query(
-            Category.id.label("categoria_id"),
-            Category.nome.label("Categoria_nome"),
+            Category.id,
+            Category.nome,
             func.sum(Transaction.valor).label("total_gasto")
         )
         .join(Transaction, Transaction.categoria_id == Category.id)
@@ -76,7 +76,7 @@ def resumo_dashboard(db: Session = Depends(get_db)):
             Transaction,
             Category.nome.label("categoria_nome")
         )
-        .join(Category, Transaction.vategoria_id == Category.id)
+        .join(Category, Transaction.categoria_id == Category.id)
         .order_by(Transaction.data_movimentacao.desc(), Transaction.id.desc())
         .limit(5)
         .all()
@@ -88,9 +88,9 @@ def resumo_dashboard(db: Session = Depends(get_db)):
         "resultados_mes": str(resultado_mes),
         "saldo_atual": str(saldo_atual),
         "categoria_maior_gasto": {
-            "categoria_id": categoria_maior_gasto.categoria_id,
-            "categoria_nome": categoria_maior_gasto.categoria_nome,
-            "total": str(categoria_maior_gasto.total_gasto)
+            "categoria_id": categoria_maior_gasto[0],
+            "categoria_nome": categoria_maior_gasto[1],
+            "total": str(categoria_maior_gasto[2])
         } if categoria_maior_gasto else None,
         "ultimas_movimentacoes": [
             {
@@ -101,7 +101,7 @@ def resumo_dashboard(db: Session = Depends(get_db)):
                 "categoria_id": movimentacao.categoria_id,
                 "categoria_nome": categoria_nome,
                 "forma_de_pagamento": movimentacao.forma_pagamento,
-                "observacao": movimentacao.observação
+                "observacao": movimentacao.observacao
             }
             for movimentacao, categoria_nome in ultimas_movimentacoes
         ]
