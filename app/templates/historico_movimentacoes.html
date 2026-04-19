@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Movimentações</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <header class="topo">
+        <h1>Histórico de Movimentações</h1>
+        <p>Consulte entradas e saídas do fluxo de caixa</p>
+        <div class="topo-acoes">
+            <a class="botao botao-topo" href="/dashboard">Voltar ao dashboard</a>
+            <a class="botao botao-topo" href="/movimentacoes/nova">Nova movimentação</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card formulario-container">
+            <h2>Filtros</h2>
+
+            <form id="form-filtros-historico" method="get" action="/movimentacoes/historico" class="form-grid">
+                <div class="campo">
+                    <label for="data_inicio">Data inicial</label>
+                    <input type="date" id="data_inicio" name="data_inicio" value="{{ filtros.data_inicio }}">
+                </div>
+
+                <div class="campo">
+                    <label for="data_fim">Data final</label>
+                    <input type="date" id="data_fim" name="data_fim" value="{{ filtros.data_fim }}">
+                </div>
+
+                <div class="campo">
+                    <label for="tipo">Tipo</label>
+                    <select id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="entrada" {% if filtros.tipo == "entrada" %}selected{% endif %}>Entrada</option>
+                        <option value="saida" {% if filtros.tipo == "saida" %}selected{% endif %}>Saída</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="categoria_id">Categoria</label>
+                    <select id="categoria_id" name="categoria_id">
+                        <option value="">Todas</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}" {% if filtros.categoria_id|string == categoria.id|string %}selected{% endif %}>
+                                {{ categoria.nome }} ({{ categoria.tipo }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="acoes-formulario campo-largo">
+                    <button type="submit" class="botao botao-primario">Aplicar filtros</button>
+                    <a href="/movimentacoes/historico" class="botao botao-secundario">Limpar filtros</a>
+                </div>
+            </form>
+        </section>
+
+        {% if historico %}
+            {% for grupo in historico %}
+                <section class="card bloco-dia">
+                    <div class="bloco-dia-topo">
+                        <h2>{{ grupo.data }}</h2>
+                    </div>
+
+                    <div class="cards cards-resumo-dia">
+                        <article class="card card-resumo-dia">
+                            <h3>Entradas do dia</h3>
+                            <p>{{ grupo.entradas_dia }}</p>
+                        </article>
+
+                        <article class="card card-resumo-dia">
+                            <h3>Saídas do dia</h3>
+                            <p>{{ grupo.saidas_dia }}</p>
+                        </article>
+
+                        <article class="card card-resumo-dia">
+                            <h3>Saldo do dia</h3>
+                            <p>{{ grupo.saldo_dia }}</p>
+                        </article>
+                    </div>
+
+                    <div class="tabela-wrapper">
+                        <table class="tabela">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Valor</th>
+                                    <th>Forma de pagamento</th>
+                                    <th>Observação</th>
+                                    <th>Criado por</th>
+                                    <th>Atualizado por</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movimentacao in grupo.movimentacoes %}
+                                    <tr>
+                                        <td>{{ movimentacao.tipo }}</td>
+                                        <td>{{ movimentacao.descricao }}</td>
+                                        <td>{{ movimentacao.categoria_nome }}</td>
+                                        <td>{{ movimentacao.valor }}</td>
+                                        <td>{{ movimentacao.forma_pagamento }}</td>
+                                        <td>{{ movimentacao.observacao }}</td>
+                                        <td>{{ movimentacao.criado_por_nome }}</td>
+                                        <td>{{ movimentacao.atualizado_por_nome }}</td>
+                                        <td>
+                                            <a href="/movimentacoes/editar/{{ movimentacao.id }}" class="botao botao-secundario botao-tabela">
+                                                Editar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            {% endfor %}
+        {% else %}
+            <section class="card">
+                <h2>Nenhuma movimentação encontrada</h2>
+                <p>Não há dados para os filtros informados.</p>
+            </section>
+        {% endif %}
+    </main>
+
+    <script>
+    const formFiltrosHistorico = document.getElementById("form-filtros-historico");
+
+    formFiltrosHistorico.addEventListener("submit", function () {
+        const campos = formFiltrosHistorico.querySelectorAll("input, select");
+
+        campos.forEach((campo) => {
+            if (campo.value === "") {
+                campo.disabled = true;
+            }
+        });
+    });
+</script>
+</body>
+</html>

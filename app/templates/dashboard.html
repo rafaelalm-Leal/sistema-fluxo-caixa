@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Fluxo de Caixa</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <header class="topo">
+        <h1>Dashboard do Fluxo de Caixa</h1>
+        <p>Resumo financeiro atual da empresa</p>
+        <div class="topo-acoes">
+            <a class="botao botao-topo" href="/movimentacoes/nova">Nova movimentação</a>
+            <a class="botao botao-topo" href="/movimentacoes/historico">Ver histórico</a>
+            <a class="botao botao-topo" href="/categorias">Categoria</a>
+            <a class="botao botao-topo" href="/usuarios">Usuários</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="cards">
+            <article class="card">
+                <h2>Entradas do mês</h2>
+                <p>{{ entradas_mes }}</p>
+            </article>
+
+            <article class="card">
+                <h2>Saídas do mês</h2>
+                <p>{{ saidas_mes }}</p>
+            </article>
+
+            <article class="card">
+                <h2>Resultado do mês</h2>
+                <p>{{ resultado_mes }}</p>
+            </article>
+
+            <article class="card">
+                <h2>Saldo atual</h2>
+                <p>{{ saldo_atual }}</p>
+            </article>
+        </section>
+
+        <section class="card destaque">
+            <h2>Categoria com maior gasto no mês</h2>
+
+            {% if categoria_maior_gasto %}
+                <p><strong>Categoria:</strong> {{ categoria_maior_gasto.nome }}</p>
+                <p><strong>Total:</strong> {{ categoria_maior_gasto.total }}</p>
+            {% else %}
+                <p>Nenhuma saída cadastrada no mês atual.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h2>Últimas movimentações</h2>
+
+            {% if ultimas_movimentacoes %}
+                <table class="tabela">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Valor</th>
+                            <th>Forma de pagamento</th>
+                            <th>Observação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for movimentacao in ultimas_movimentacoes %}
+                            <tr>
+                                <td>{{ movimentacao.data_movimentacao }}</td>
+                                <td>{{ movimentacao.tipo }}</td>
+                                <td>{{ movimentacao.descricao }}</td>
+                                <td>{{ movimentacao.categoria_nome }}</td>
+                                <td>{{ movimentacao.valor }}</td>
+                                <td>{{ movimentacao.forma_pagamento }}</td>
+                                <td>{{ movimentacao.observacao }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Nenhuma movimentação cadastrada até agora.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

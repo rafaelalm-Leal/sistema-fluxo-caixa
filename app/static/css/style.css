@@ -1,0 +1,203 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    color: #333;
+}
+
+.topo {
+    background-color: #1f4e79;
+    color: white;
+    padding: 24px;
+    text-align: center;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 20px;
+}
+
+.card p {
+    font-size: 18px;
+    margin: 10px 0 0;
+}
+
+.destaque {
+    margin-bottom: 30px;
+}
+
+.tabela {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.tabela th,
+.tabela td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.tabela th {
+    background-color: #1f4e79;
+    color: white;
+}
+
+.tabela tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.botao {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+.botao-topo {
+    background-color: white;
+    color: #1f4e79;
+    margin-top: 12px;
+}
+
+.botao-primario {
+    background-color: #1f4e79;
+    color: white;
+}
+
+.botao-secundario {
+    background-color: #e9eef3;
+    color: #1f4e79;
+}
+
+.formulario-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campo-largo {
+    grid-column: 1 / -1;
+}
+
+.campo label {
+    font-weight: bold;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.acoes-formulario {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.topo-acoes {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.bloco-dia {
+    margin-top: 30px;
+}
+
+.bloco-dia-topo {
+    margin-bottom: 20px;
+}
+
+.bloco-dia-topo h2 {
+    margin: 0;
+}
+
+.cards-resumo-dia {
+    margin-bottom: 20px;
+}
+
+.card-resumo-dia h3 {
+    margin-top: 0;
+    font-size: 18px;
+}
+
+.card-resumo-dia p {
+    font-size: 17px;
+    margin: 8px 0 0;
+}
+
+.tabela-wrapper {
+    overflow-x: auto;
+}
+
+.botao-tabela {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.form-inline {
+    margin: 0;
+}
+
+.form-inline button {
+    width: 100%;
+}
+
+.checkbox-campo {
+    justify-content: center;
+}
+
+.checkbox-campo label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+}

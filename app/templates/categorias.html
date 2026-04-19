@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categorias</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <header class="topo">
+        <h1>Gerenciamento de Categorias</h1>
+        <p>Crie, visualize e altere o status das categorias do sistema</p>
+        <div class="topo-acoes">
+            <a class="botao botao-topo" href="/dashboard">Voltar ao dashboard</a>
+            <a class="botao botao-topo" href="/movimentacoes/nova">Nova movimentação</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card formulario-container">
+            <h2>Nova categoria</h2>
+
+            <form action="/categorias/nova" method="post" class="form-grid">
+                <div class="campo">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+
+                <div class="campo">
+                    <label for="tipo">Tipo</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="">Selecione o tipo</option>
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                </div>
+
+                <div class="acoes-formulario campo-largo">
+                    <button type="submit" class="botao botao-primario">Criar categoria</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Lista de categorias</h2>
+
+            {% if categorias %}
+                <div class="tabela-wrapper">
+                    <table class="tabela">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Tipo</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for categoria in categorias %}
+                                <tr>
+                                    <td>{{ categoria.id }}</td>
+                                    <td>{{ categoria.nome }}</td>
+                                    <td>{{ categoria.tipo }}</td>
+                                    <td>
+                                        {% if categoria.ativa %}
+                                            Ativa
+                                        {% else %}
+                                            Inativa
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form action="/categorias/{{ categoria.id }}/alternar-status" method="post" class="form-inline">
+                                            {% if categoria.ativa %}
+                                                <button type="submit" class="botao botao-secundario botao-tabela">
+                                                    Desativar
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="botao botao-primario botao-tabela">
+                                                    Ativar
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>Nenhuma categoria cadastrada até o momento.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

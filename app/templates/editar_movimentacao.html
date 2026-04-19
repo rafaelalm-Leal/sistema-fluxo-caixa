@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Movimentação</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <header class="topo">
+        <h1>Editar Movimentação</h1>
+        <p>Atualize os dados da movimentação selecionada</p>
+        <div class="topo-acoes">
+            <a class="botao botao-topo" href="/movimentacoes/historico">Voltar ao histórico</a>
+            <a class="botao botao-topo" href="/dashboard">Ir para o dashboard</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card formulario-container">
+            <form action="/movimentacoes/editar/{{ movimentacao.id }}" method="post" class="form-grid">
+                <div class="campo">
+                    <label for="tipo">Tipo</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="entrada" {% if movimentacao.tipo == "entrada" %}selected{% endif %}>Entrada</option>
+                        <option value="saida" {% if movimentacao.tipo == "saida" %}selected{% endif %}>Saída</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="descricao">Descrição</label>
+                    <input type="text" id="descricao" name="descricao" value="{{ movimentacao.descricao }}" required>
+                </div>
+
+                <div class="campo">
+                    <label for="valor">Valor</label>
+                    <input type="number" id="valor" name="valor" step="0.01" min="0.01" value="{{ movimentacao.valor }}" required>
+                </div>
+
+                <div class="campo">
+                    <label for="data_movimentacao">Data da movimentação</label>
+                    <input type="date" id="data_movimentacao" name="data_movimentacao" value="{{ movimentacao.data_movimentacao }}" required>
+                </div>
+
+                <div class="campo">
+                    <label for="categoria_id">Categoria</label>
+                    <select id="categoria_id" name="categoria_id" required>
+                        <option value="">Selecione a categoria</option>
+                        {% for categoria in categorias %}
+                            <option
+                                value="{{ categoria.id }}"
+                                data-tipo="{{ categoria.tipo }}"
+                                {% if movimentacao.categoria_id == categoria.id %}selected{% endif %}
+                            >
+                                {{ categoria.nome }} ({{ categoria.tipo }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="forma_pagamento">Forma de pagamento</label>
+                    <input type="text" id="forma_pagamento" name="forma_pagamento" value="{{ movimentacao.forma_pagamento }}">
+                </div>
+
+                <div class="campo campo-largo">
+                    <label for="observacao">Observação</label>
+                    <textarea id="observacao" name="observacao" rows="4">{{ movimentacao.observacao }}</textarea>
+                </div>
+
+                <div class="campo">
+                    <label for="usuario_id">Usuário responsável pela edição</label>
+                    <select id="usuario_id" name="usuario_id" required>
+                        <option value="">Selecione o usuário</option>
+                        {% for usuario in usuarios %}
+                            <option
+                                value="{{ usuario.id }}"
+                                {% if movimentacao.updated_by == usuario.id %}selected{% endif %}
+                            >
+                                {{ usuario.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="acoes-formulario campo-largo">
+                    <button type="submit" class="botao botao-primario">Salvar alterações</button>
+                    <a href="/movimentacoes/historico" class="botao botao-secundario">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const tipoSelect = document.getElementById("tipo");
+        const categoriaSelect = document.getElementById("categoria_id");
+        const opcoesCategoria = Array.from(categoriaSelect.options);
+        const categoriaSelecionadaInicial = categoriaSelect.value;
+
+        function atualizarCategorias(manternSelecionada = false) {
+            const tipoSelecionado = tipoSelect.value;
+
+            opcoesCategoria.forEach((opcao, indice) => {
+                if (indice === 0) {
+                    opcao.hidden = false;
+                    return;
+                }
+
+                const tipoCategoria = opcao.getAttribute("data-tipo");
+                const deveMostrar = tipoSelecionado === "" || tipoCategoria === tipoSelecionado;
+                opcao.hidden = !deveMostrar;
+            });
+
+            if (!manternSelecionada) {
+                categoriaSelect.value = "";
+            }
+        }
+
+        tipoSelect.addEventListener("change", function () {
+            atualizarCategorias(false);
+        });
+
+        atualizarCategorias(true);
+        categoriaSelect.value = categoriaSelecionadaInicial;
+    </script>
+</body>
+</html>

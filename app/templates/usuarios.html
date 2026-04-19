@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuários</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <header class="topo">
+        <h1>Gerenciamento de Usuários</h1>
+        <p>Crie, visualize e altere o status dos usuários do sistema</p>
+        <div class="topo-acoes">
+            <a class="botao botao-topo" href="/dashboard">Voltar ao dashboard</a>
+            <a class="botao botao-topo" href="/categorias">Categorias</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card formulario-container">
+            <h2>Novo usuário</h2>
+
+            <form action="/usuarios/novo" method="post" class="form-grid">
+                <div class="campo">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+
+                <div class="campo">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="campo">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" required>
+                </div>
+
+                <div class="campo checkbox-campo">
+                    <label for="is_admin">
+                        <input type="checkbox" id="is_admin" name="is_admin">
+                        Usuário administrador
+                    </label>
+                </div>
+
+                <div class="acoes-formulario campo-largo">
+                    <button type="submit" class="botao botao-primario">Criar usuário</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Lista de usuários</h2>
+
+            {% if usuarios %}
+                <div class="tabela-wrapper">
+                    <table class="tabela">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Admin</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                                <tr>
+                                    <td>{{ usuario.id }}</td>
+                                    <td>{{ usuario.nome }}</td>
+                                    <td>{{ usuario.email }}</td>
+                                    <td>
+                                        {% if usuario.is_admin %}
+                                            Sim
+                                        {% else %}
+                                            Não
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if usuario.ativo %}
+                                            Ativo
+                                        {% else %}
+                                            Inativo
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form action="/usuarios/{{ usuario.id }}/alternar-status" method="post" class="form-inline">
+                                            {% if usuario.ativo %}
+                                                <button type="submit" class="botao botao-secundario botao-tabela">
+                                                    Desativar
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="botao botao-primario botao-tabela">
+                                                    Ativar
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>Nenhum usuário cadastrado até o momento.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>
