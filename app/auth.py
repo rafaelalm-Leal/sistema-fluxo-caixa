@@ -1,4 +1,5 @@
-from fastapi import HTTPException, Request
+from fastapi import Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.models.user import User
@@ -19,19 +20,22 @@ def buscar_usuario_logado(request: Request, db: Session) -> User | None:
     return usuario
 
 
-def exigir_usuario_logado(request: Request, db: Session) -> User:
+def redirecionar_se_nao_logado(request: Request, db: Session):
     usuario = buscar_usuario_logado(request, db)
 
     if not usuario:
-        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+        return RedirectResponse(url="/login", status_code=303)
 
-    return usuario
+    return None
 
 
-def exigir_admin(request: Request, db: Session) -> User:
-    usuario = exigir_usuario_logado(request, db)
+def redirecionar_se_nao_for_admin(request: Request, db: Session):
+    usuario = buscar_usuario_logado(request, db)
+
+    if not usuario:
+        return RedirectResponse(url="/login", status_code=303)
 
     if not usuario.is_admin:
-        raise HTTPException(status_code=403, detail="Acesso permitido apenas para administrador")
+        return RedirectResponse(url="/dashboard", status_code=303)
 
-    return usuario
+    return None

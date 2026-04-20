@@ -13,7 +13,11 @@ from app.models.category import Category
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.security import gerar_hash_senha
-from app.auth import buscar_usuario_logado, exigir_admin, exigir_usuario_logado
+from app.auth import (
+    buscar_usuario_logado,
+    redirecionar_se_nao_logado,
+    redirecionar_se_nao_for_admin,
+)
 from app.security import gerar_hash_senha, verificar_senha
 
 router = APIRouter(tags=["Pages"])
@@ -72,7 +76,11 @@ def logout(request: Request):
 
 @router.get("/dashboard")
 def dashboard_page(request: Request, db: Session = Depends(get_db)):
-    usuario_logado = exigir_usuario_logado(request, db)
+    redirecionamento = redirecionar_se_nao_logado(request, db)
+    if redirecionamento:
+        return redirecionamento
+
+    usuario_logado = buscar_usuario_logado(request, db)
     hoje = date.today()
     primeiro_dia_mes = hoje.replace(day=1)
 
@@ -181,7 +189,11 @@ def dashboard_page(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/movimentacoes/nova")
 def nova_movimentacao_page(request: Request, db: Session = Depends(get_db)):
-    usuario_logado = exigir_usuario_logado(request, db)
+    redirecionamento = redirecionar_se_nao_logado(request, db)
+    if redirecionamento:
+        return redirecionamento
+
+    usuario_logado = buscar_usuario_logado(request, db)
 
     categorias = (
         db.query(Category)
@@ -224,7 +236,6 @@ def salvar_movimentacao_page(
     observacao: str | None = Form(None),
     db: Session = Depends(get_db)
 ):
-    usuario_logado = exigir_usuario_logado(request, db)
 
     descricao = descricao.strip()
 
@@ -260,8 +271,6 @@ def salvar_movimentacao_page(
         categoria_id=categoria_id,
         forma_pagamento=forma_pagamento or None,
         observacao=observacao or None,
-        created_by=usuario_logado.id,
-        updated_by=usuario_logado.id
     )
 
     db.add(nova_movimentacao)
@@ -278,7 +287,11 @@ def historico_movimentacoes_page(
     categoria_id: int | None = Query(default=None),
     db: Session = Depends(get_db)
 ):
-    usuario_logado = exigir_usuario_logado(request, db)
+    redirecionamento = redirecionar_se_nao_logado(request, db)
+    if redirecionamento:
+        return redirecionamento
+
+    usuario_logado = buscar_usuario_logado(request, db)
     usuario_criador = aliased(User)
     usuario_editor = aliased(User)
 
@@ -397,7 +410,11 @@ def editar_movimentacao_page(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    usuario_logado = exigir_usuario_logado(request, db)
+    redirecionamento = redirecionar_se_nao_logado(request, db)
+    if redirecionamento:
+        return redirecionamento
+
+    usuario_logado = buscar_usuario_logado(request, db)
 
     movimentacao = (
         db.query(Transaction)
@@ -462,7 +479,6 @@ def salvar_edicao_movimentacao_page(
     observacao: str | None = Form(None),
     db: Session = Depends(get_db)
 ):
-    usuario_logado = exigir_usuario_logado(request, db)
 
     movimentacao = (
         db.query(Transaction)
@@ -506,7 +522,6 @@ def salvar_edicao_movimentacao_page(
     movimentacao.categoria_id = categoria_id
     movimentacao.forma_pagamento = forma_pagamento or None
     movimentacao.observacao = observacao or None
-    movimentacao.updated_by = usuario_logado.id
 
     db.commit()
 
@@ -514,7 +529,11 @@ def salvar_edicao_movimentacao_page(
 
 @router.get("/categorias")
 def categorias_page(request: Request, db: Session = Depends(get_db)):
-    usuario_logado = exigir_admin(request, db)
+    redirecionamento = redirecionar_se_nao_for_admin(request, db)
+    if redirecionamento:
+        return redirecionamento
+
+    usuario_logado = buscar_usuario_logado(request, db)
 
     categorias = (
         db.query(Category)
@@ -553,7 +572,11 @@ def criar_categoria_page(
     tipo: TipoMovimentacao = Form(...),
     db: Session = Depends(get_db)
 ):
-    usuario_admin = exigir_admin(request, db)
+    
+    redirecionamento = redirecionar_se_nao_for_admin(request, db)
+    if redirecionamento:
+        return redirecionamento
+
     nome = nome.strip()
 
     if not nome:
@@ -589,7 +612,11 @@ def alternar_status_categoria_page(
     categoria_id: int,
     db: Session = Depends(get_db)
 ):
-    usuario_admin = exigir_admin(request, db)
+    
+    redirecionamento = redirecionar_se_nao_for_admin(request, db)
+    if redirecionamento:
+        return redirecionamento
+
     categoria = (
         db.query(Category)
         .filter(Category.id == categoria_id)
@@ -606,7 +633,11 @@ def alternar_status_categoria_page(
 
 @router.get("/usuarios")
 def usuarios_page(request: Request, db: Session = Depends(get_db)):
-    usuario_logado = exigir_admin(request, db)
+    redirecionamento = redirecionar_se_nao_for_admin(request, db)
+    if redirecionamento:
+        return redirecionamento
+
+    usuario_logado = buscar_usuario_logado(request, db)
     usuarios = (
         db.query(User)
         .order_by(User.nome.asc())
@@ -647,7 +678,11 @@ def criar_usuario_page(
     is_admin: str | None = Form(None),
     db: Session = Depends(get_db)
 ):
-    usuario_admin = exigir_admin(request, db)
+    
+    redirecionamento = redirecionar_se_nao_for_admin(request, db)
+    if redirecionamento:
+        return redirecionamento
+
     nome = nome.strip()
     email = email.strip().lower()
 
@@ -689,7 +724,11 @@ def alternar_status_usuario_page(
     usuario_id: int,
     db: Session = Depends(get_db)
 ):
-    usuario_admin = exigir_admin(request, db)
+    
+    redirecionamento = redirecionar_se_nao_for_admin(request, db)
+    if redirecionamento:
+        return redirecionamento
+
     usuario = (
         db.query(User)
         .filter(User.id == usuario_id)
