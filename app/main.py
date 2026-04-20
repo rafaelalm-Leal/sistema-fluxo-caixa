@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.database import Base, engine
 from app.models.user import User
@@ -13,6 +14,11 @@ from app.routes.dashboard import router as dashboard_router
 from app.routes.pages import router as pages_router
 
 app = FastAPI()
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="troque-esta-chave-por-uma-chave-secreta-bem-forte"
+)
 
 Base.metadata.create_all(bind=engine)
 

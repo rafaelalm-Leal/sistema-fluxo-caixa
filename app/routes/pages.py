@@ -13,6 +13,8 @@ from app.models.category import Category
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.security import gerar_hash_senha
+from app.auth import buscar_usuario_logado, exigir_admin, exigir_usuario_logado
+from app.security import gerar_hash_senha, verificar_senha
 
 router = APIRouter(tags=["Pages"])
 templates = Jinja2Templates(directory="app/templates")
@@ -21,9 +23,56 @@ templates = Jinja2Templates(directory="app/templates")
 def formatar_moeda(valor: Decimal) -> str:
     return f"R$ {valor:.2f}"
 
+@router.get("/login")
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={
+            "erro": ""
+        }
+    )
+
+
+@router.post("/login")
+def login_submit(
+    request: Request,
+    email: str = Form(...),
+    senha: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    email = email.strip().lower()
+
+    usuario = (
+        db.query(User)
+        .filter(User.email == email, User.ativo == True)
+        .first()
+    )
+
+    if not usuario or not verificar_senha(senha, usuario.senha_hash):
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "erro": "Email ou senha inválidos"
+            },
+            status_code=400
+        )
+
+    request.session["user_id"] = usuario.id
+
+    return RedirectResponse(url="/dashboard", status_code=303)
+
+
+@router.get("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/login", status_code=303)
+
 
 @router.get("/dashboard")
 def dashboard_page(request: Request, db: Session = Depends(get_db)):
+    usuario_logado = exigir_usuario_logado(request, db)
     hoje = date.today()
     primeiro_dia_mes = hoje.replace(day=1)
 
@@ -127,6 +176,7 @@ def dashboard_page(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/movimentacoes/nova")
 def nova_movimentacao_page(request: Request, db: Session = Depends(get_db)):
+    usuario_logado = exigir_usuario_logado(request, db)
     categorias = (
         db.query(Category)
         .filter(Category.ativa == True)
@@ -241,6 +291,7 @@ def historico_movimentacoes_page(
     categoria_id: int | None = Query(default=None),
     db: Session = Depends(get_db)
 ):
+    usuario_logado = exigir_usuario_logado(request, db)
     usuario_criador = aliased(User)
     usuario_editor = aliased(User)
 
@@ -354,6 +405,7 @@ def editar_movimentacao_page(
     request: Request,
     db: Session = Depends(get_db)
 ):
+    usuario_logado = exigir_usuario_logado(request, db)
     movimentacao = (
         db.query(Transaction)
         .filter(Transaction.id == movimentacao_id)
@@ -489,6 +541,7 @@ def salvar_edicao_movimentacao_page(
 
 @router.get("/categorias")
 def categorias_page(request: Request, db: Session = Depends(get_db)):
+    usuario_admin = exigir_admin(request, db)
     categorias = (
         db.query(Category)
         .order_by(Category.tipo.asc(), Category.nome.asc())
@@ -516,10 +569,12 @@ def categorias_page(request: Request, db: Session = Depends(get_db)):
 
 @router.post("/categorias/nova")
 def criar_categoria_page(
+    request: Request,
     nome: str = Form(...),
     tipo: TipoMovimentacao = Form(...),
     db: Session = Depends(get_db)
 ):
+    usuario_admin = exigir_admin(request, db)
     nome = nome.strip()
 
     if not nome:
@@ -551,9 +606,11 @@ def criar_categoria_page(
 
 @router.post("/categorias/{categoria_id}/alternar-status")
 def alternar_status_categoria_page(
+    request: Request,
     categoria_id: int,
     db: Session = Depends(get_db)
 ):
+    usuario_admin = exigir_admin(request, db)
     categoria = (
         db.query(Category)
         .filter(Category.id == categoria_id)
@@ -570,6 +627,7 @@ def alternar_status_categoria_page(
 
 @router.get("/usuarios")
 def usuarios_page(request: Request, db: Session = Depends(get_db)):
+    usuario_admin = exigir_admin(request, db)
     usuarios = (
         db.query(User)
         .order_by(User.nome.asc())
@@ -598,12 +656,14 @@ def usuarios_page(request: Request, db: Session = Depends(get_db)):
 
 @router.post("/usuarios/novo")
 def criar_usuario_page(
+    request: Request,
     nome: str = Form(...),
     email: str = Form(...),
     senha: str = Form(...),
     is_admin: str | None = Form(None),
     db: Session = Depends(get_db)
 ):
+    usuario_admin = exigir_admin(request, db)
     nome = nome.strip()
     email = email.strip().lower()
 
@@ -641,9 +701,11 @@ def criar_usuario_page(
 
 @router.post("/usuarios/{usuario_id}/alternar-status")
 def alternar_status_usuario_page(
+    request: Request,
     usuario_id: int,
     db: Session = Depends(get_db)
 ):
+    usuario_admin = exigir_admin(request, db)
     usuario = (
         db.query(User)
         .filter(User.id == usuario_id)

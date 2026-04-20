@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Fluxo de Caixa</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <main class="login-wrapper">
+        <section class="card login-card">
+            <h1>Entrar no sistema</h1>
+            <p>Use seu email e senha para acessar o fluxo de caixa.</p>
+
+            {% if erro %}
+                <div class="mensagem-erro">
+                    {{ erro }}
+                </div>
+            {% endif %}
+
+            <form action="/login" method="post" class="form-grid">
+                <div class="campo campo-largo">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="campo campo-largo">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" required>
+                </div>
+
+                <div class="acoes-formulario campo-largo">
+                    <button type="submit" class="botao botao-primario">Entrar</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
