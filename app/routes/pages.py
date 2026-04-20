@@ -170,24 +170,23 @@ def dashboard_page(request: Request, db: Session = Depends(get_db)):
         "resultado_mes": formatar_moeda(resultado_mes),
         "saldo_atual": formatar_moeda(saldo_atual),
         "categoria_maior_gasto": categoria_resumo,
-        "ultimas_movimentacoes": ultimas_movimentacoes_formatadas
+        "ultimas_movimentacoes": ultimas_movimentacoes_formatadas,
+        "usuario_logado": {
+            "id": usuario_logado.id,
+            "nome": usuario_logado.nome,
+            "is_admin": usuario_logado.is_admin
+        }
     }
 )
 
 @router.get("/movimentacoes/nova")
 def nova_movimentacao_page(request: Request, db: Session = Depends(get_db)):
     usuario_logado = exigir_usuario_logado(request, db)
+
     categorias = (
         db.query(Category)
         .filter(Category.ativa == True)
         .order_by(Category.tipo.asc(), Category.nome.asc())
-        .all()
-    )
-
-    usuarios = (
-        db.query(User)
-        .filter(User.ativo == True)
-        .order_by(User.nome.asc())
         .all()
     )
 
@@ -200,26 +199,22 @@ def nova_movimentacao_page(request: Request, db: Session = Depends(get_db)):
         for categoria in categorias
     ]
 
-    usuarios_formatados = [
-        {
-            "id": usuario.id,
-            "nome": usuario.nome
-        }
-        for usuario in usuarios
-    ]
-
     return templates.TemplateResponse(
         request=request,
         name="nova_movimentacao.html",
         context={
             "categorias": categorias_formatadas,
-            "usuarios": usuarios_formatados
+            "usuario_logado": {
+                "id": usuario_logado.id,
+                "nome": usuario_logado.nome
+            }
         }
     )
 
 
 @router.post("/movimentacoes/nova")
 def salvar_movimentacao_page(
+    request: Request,
     tipo: TipoMovimentacao = Form(...),
     descricao: str = Form(...),
     valor: Decimal = Form(...),
@@ -227,9 +222,10 @@ def salvar_movimentacao_page(
     categoria_id: int = Form(...),
     forma_pagamento: str | None = Form(None),
     observacao: str | None = Form(None),
-    usuario_id: int = Form(...),
     db: Session = Depends(get_db)
 ):
+    usuario_logado = exigir_usuario_logado(request, db)
+
     descricao = descricao.strip()
 
     if not descricao:
@@ -256,15 +252,6 @@ def salvar_movimentacao_page(
             detail="O tipo da movimentação não é compatível com o tipo da categoria"
         )
 
-    usuario = (
-        db.query(User)
-        .filter(User.id == usuario_id, User.ativo == True)
-        .first()
-    )
-
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
     nova_movimentacao = Transaction(
         tipo=tipo,
         descricao=descricao,
@@ -273,8 +260,8 @@ def salvar_movimentacao_page(
         categoria_id=categoria_id,
         forma_pagamento=forma_pagamento or None,
         observacao=observacao or None,
-        created_by=usuario_id,
-        updated_by=usuario_id
+        created_by=usuario_logado.id,
+        updated_by=usuario_logado.id
     )
 
     db.add(nova_movimentacao)
@@ -395,6 +382,11 @@ def historico_movimentacoes_page(
                 "data_fim": str(data_fim) if data_fim else "",
                 "tipo": tipo.value if tipo else "",
                 "categoria_id": categoria_id if categoria_id else ""
+            },
+            "usuario_logado": {
+                "id": usuario_logado.id,
+                "nome": usuario_logado.nome,
+                "is_admin": usuario_logado.is_admin
             }
         }
     )
@@ -406,6 +398,7 @@ def editar_movimentacao_page(
     db: Session = Depends(get_db)
 ):
     usuario_logado = exigir_usuario_logado(request, db)
+
     movimentacao = (
         db.query(Transaction)
         .filter(Transaction.id == movimentacao_id)
@@ -422,13 +415,6 @@ def editar_movimentacao_page(
         .all()
     )
 
-    usuarios = (
-        db.query(User)
-        .filter(User.ativo == True)
-        .order_by(User.nome.asc())
-        .all()
-    )
-
     categorias_formatadas = [
         {
             "id": categoria.id,
@@ -436,14 +422,6 @@ def editar_movimentacao_page(
             "tipo": categoria.tipo.value
         }
         for categoria in categorias
-    ]
-
-    usuarios_formatados = [
-        {
-            "id": usuario.id,
-            "nome": usuario.nome
-        }
-        for usuario in usuarios
     ]
 
     movimentacao_formatada = {
@@ -454,8 +432,7 @@ def editar_movimentacao_page(
         "data_movimentacao": str(movimentacao.data_movimentacao),
         "categoria_id": movimentacao.categoria_id,
         "forma_pagamento": movimentacao.forma_pagamento or "",
-        "observacao": movimentacao.observacao or "",
-        "updated_by": movimentacao.updated_by
+        "observacao": movimentacao.observacao or ""
     }
 
     return templates.TemplateResponse(
@@ -464,7 +441,10 @@ def editar_movimentacao_page(
         context={
             "movimentacao": movimentacao_formatada,
             "categorias": categorias_formatadas,
-            "usuarios": usuarios_formatados
+            "usuario_logado": {
+                "id": usuario_logado.id,
+                "nome": usuario_logado.nome
+            }
         }
     )
 
@@ -472,6 +452,7 @@ def editar_movimentacao_page(
 @router.post("/movimentacoes/editar/{movimentacao_id}")
 def salvar_edicao_movimentacao_page(
     movimentacao_id: int,
+    request: Request,
     tipo: TipoMovimentacao = Form(...),
     descricao: str = Form(...),
     valor: Decimal = Form(...),
@@ -479,9 +460,10 @@ def salvar_edicao_movimentacao_page(
     categoria_id: int = Form(...),
     forma_pagamento: str | None = Form(None),
     observacao: str | None = Form(None),
-    usuario_id: int = Form(...),
     db: Session = Depends(get_db)
 ):
+    usuario_logado = exigir_usuario_logado(request, db)
+
     movimentacao = (
         db.query(Transaction)
         .filter(Transaction.id == movimentacao_id)
@@ -517,15 +499,6 @@ def salvar_edicao_movimentacao_page(
             detail="O tipo da movimentação não é compatível com o tipo da categoria"
         )
 
-    usuario = (
-        db.query(User)
-        .filter(User.id == usuario_id, User.ativo == True)
-        .first()
-    )
-
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-
     movimentacao.tipo = tipo
     movimentacao.descricao = descricao
     movimentacao.valor = valor
@@ -533,7 +506,7 @@ def salvar_edicao_movimentacao_page(
     movimentacao.categoria_id = categoria_id
     movimentacao.forma_pagamento = forma_pagamento or None
     movimentacao.observacao = observacao or None
-    movimentacao.updated_by = usuario_id
+    movimentacao.updated_by = usuario_logado.id
 
     db.commit()
 
@@ -541,7 +514,8 @@ def salvar_edicao_movimentacao_page(
 
 @router.get("/categorias")
 def categorias_page(request: Request, db: Session = Depends(get_db)):
-    usuario_admin = exigir_admin(request, db)
+    usuario_logado = exigir_admin(request, db)
+
     categorias = (
         db.query(Category)
         .order_by(Category.tipo.asc(), Category.nome.asc())
@@ -562,7 +536,12 @@ def categorias_page(request: Request, db: Session = Depends(get_db)):
         request=request,
         name="categorias.html",
         context={
-            "categorias": categorias_formatadas
+            "categorias": categorias_formatadas,
+            "usuario_logado": {
+                "id": usuario_logado.id,
+                "nome": usuario_logado.nome,
+                "is_admin": usuario_logado.is_admin
+            }
         }
     )
 
@@ -627,7 +606,7 @@ def alternar_status_categoria_page(
 
 @router.get("/usuarios")
 def usuarios_page(request: Request, db: Session = Depends(get_db)):
-    usuario_admin = exigir_admin(request, db)
+    usuario_logado = exigir_admin(request, db)
     usuarios = (
         db.query(User)
         .order_by(User.nome.asc())
@@ -649,7 +628,12 @@ def usuarios_page(request: Request, db: Session = Depends(get_db)):
         request=request,
         name="usuarios.html",
         context={
-            "usuarios": usuarios_formatados
+            "usuarios": usuarios_formatados,
+            "usuarios_logados": {
+                "id": usuario_logado.id,
+                "nome": usuario_logado.nome,
+                "is_admin": usuario_logado.is_admin
+            }
         }
     )
 

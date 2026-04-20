@@ -13,6 +13,13 @@
         <div class="topo-acoes">
             <a class="botao botao-topo" href="/movimentacoes/historico">Voltar ao histórico</a>
             <a class="botao botao-topo" href="/dashboard">Ir para o dashboard</a>
+
+            {% if usuario_logado.is_admin %}
+                <a class="botao botao-topo" href="/categorias">Categorias</a>
+                <a class="botao botao-topo" href="/usuarios">Usuários</a>
+            {% endif %}
+
+            <a class="botao botao-topo" href="/logout">Sair</a>
         </div>
     </header>
 
@@ -68,19 +75,9 @@
                     <textarea id="observacao" name="observacao" rows="4">{{ movimentacao.observacao }}</textarea>
                 </div>
 
-                <div class="campo">
-                    <label for="usuario_id">Usuário responsável pela edição</label>
-                    <select id="usuario_id" name="usuario_id" required>
-                        <option value="">Selecione o usuário</option>
-                        {% for usuario in usuarios %}
-                            <option
-                                value="{{ usuario.id }}"
-                                {% if movimentacao.updated_by == usuario.id %}selected{% endif %}
-                            >
-                                {{ usuario.nome }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                <div class="campo campo-largo">
+                    <label>Usuário logado</label>
+                    <input type="text" value="{{ usuario_logado.nome }}" disabled>
                 </div>
 
                 <div class="acoes-formulario campo-largo">

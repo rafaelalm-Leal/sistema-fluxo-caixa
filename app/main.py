@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
@@ -32,5 +32,10 @@ app.include_router(pages_router)
 
 
 @app.get("/")
-def pagina_inicial():
-    return RedirectResponse(url="/dashboard")
+def pagina_inicial(request: Request):
+    user_id = request.session.get("user_id")
+
+    if user_id:
+        return RedirectResponse(url="/dashboard", status_code=303)
+    
+    return RedirectResponse(url="/login", status_code=303)

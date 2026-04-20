@@ -10,7 +10,18 @@
     <header class="topo">
         <h1>Nova Movimentação</h1>
         <p>Cadastre uma entrada ou saída do fluxo de caixa</p>
-        <a class="botao botao-topo" href="/dashboard">Voltar ao dashboard</a>
+        
+        <div class="topo-acoes">
+            <a class="botao botao-topo" href="/dashboard">Voltar ao dashboard</a>
+            <a class="botao botao-topo" href="/movimentacoes/historico">Ver histórico</a>
+
+            {% if usuario_logado.is_admin %}
+                <a class="botao botao-topo" href="/categorias">Categorias</a>
+                <a class="botao botao-topo" href="/usuarios">Usuários</a>
+            {% endif %}
+
+            <a class="botao botao-topo" href="logout">Sair</a>
+        </div>
     </header>
 
     <main class="container">
@@ -62,14 +73,9 @@
                     <textarea id="observacao" name="observacao" rows="4"></textarea>
                 </div>
 
-                <div class="campo">
-                    <label for="usuario_id">Usuário responsável</label>
-                    <select id="usuario_id" name="usuario_id" required>
-                        <option value="">Selecione o usuário</option>
-                        {% for usuario in usuarios %}
-                            <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="campo campo-largo">
+                    <label>Usuário logado</label>
+                    <input type="text" value="{{ usuario_logado.nome }}" disabled>
                 </div>
 
                 <div class="acoes-formulario campo-largo">
