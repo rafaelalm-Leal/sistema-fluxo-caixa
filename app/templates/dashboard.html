@@ -79,32 +79,34 @@
             <h2>Últimas movimentações</h2>
 
             {% if ultimas_movimentacoes %}
-                <table class="tabela">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Tipo</th>
-                            <th>Descrição</th>
-                            <th>Categoria</th>
-                            <th>Valor</th>
-                            <th>Forma de pagamento</th>
-                            <th>Observação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for movimentacao in ultimas_movimentacoes %}
+                <div class="tabela-wrapper">
+                    <table class="tabela tabela-dashboard">
+                        <thead>
                             <tr>
-                                <td>{{ movimentacao.data_movimentacao }}</td>
-                                <td>{{ movimentacao.tipo }}</td>
-                                <td>{{ movimentacao.descricao }}</td>
-                                <td>{{ movimentacao.categoria_nome }}</td>
-                                <td>{{ movimentacao.valor }}</td>
-                                <td>{{ movimentacao.forma_pagamento }}</td>
-                                <td>{{ movimentacao.observacao }}</td>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th>Forma de pagamento</th>
+                                <th>Observação</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for movimentacao in ultimas_movimentacoes %}
+                                <tr>
+                                    <td>{{ movimentacao.data_movimentacao }}</td>
+                                    <td>{{ movimentacao.tipo }}</td>
+                                    <td>{{ movimentacao.descricao }}</td>
+                                    <td>{{ movimentacao.categoria_nome }}</td>
+                                    <td>{{ movimentacao.valor }}</td>
+                                    <td>{{ movimentacao.forma_pagamento }}</td>
+                                    <td>{{ movimentacao.observacao }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
                 <p>Nenhuma movimentação cadastrada até agora.</p>
             {% endif %}

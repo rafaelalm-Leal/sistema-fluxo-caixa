@@ -236,6 +236,13 @@ def salvar_movimentacao_page(
     observacao: str | None = Form(None),
     db: Session = Depends(get_db)
 ):
+    redirecionamento = redirecionar_se_nao_logado(request, db)
+    if redirecionamento:
+        return redirecionamento
+
+    usuario_logado = buscar_usuario_logado(request, db)
+    if not usuario_logado:
+        return RedirectResponse(url="/login", status_code=303)
 
     descricao = descricao.strip()
 
@@ -271,6 +278,8 @@ def salvar_movimentacao_page(
         categoria_id=categoria_id,
         forma_pagamento=forma_pagamento or None,
         observacao=observacao or None,
+        created_by=usuario_logado.id,
+        updated_by=usuario_logado.id
     )
 
     db.add(nova_movimentacao)
@@ -479,6 +488,16 @@ def salvar_edicao_movimentacao_page(
     observacao: str | None = Form(None),
     db: Session = Depends(get_db)
 ):
+    
+    redirecionamento = redirecionar_se_nao_logado(request, db)
+    if redirecionamento:
+        return redirecionamento
+
+    usuario_logado = buscar_usuario_logado(request, db)
+    if not usuario_logado:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    movimentacao.updated_by = usuario_logado.id
 
     movimentacao = (
         db.query(Transaction)

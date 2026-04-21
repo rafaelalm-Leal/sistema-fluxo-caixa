@@ -223,3 +223,26 @@ body {
     padding: 12px;
     margin-bottom: 16px;
 }
+
+.tabela-dashboard {
+    min-width: 720px;
+}
+
+.tabela-dashboard th,
+.tabela-dashboard td {
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+    }
+
+    .card {
+        padding: 16px;
+    }
+
+    .tabela-dashboard {
+        min-width: 700px;
+    }
+}
