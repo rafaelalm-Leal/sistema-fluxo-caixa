@@ -1,0 +1,22 @@
+{
+  "name": "Fluxo de Caixa",
+  "short_name": "FluxoCaixa",
+  "description": "Sistema de fluxo de caixa para pequenas empresas",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#1f4e79",
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

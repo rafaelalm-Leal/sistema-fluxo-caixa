@@ -5,7 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Categorias</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <link rel="manifest" href="/static/manifest.webmanifest">
+    <meta name="theme-color" content="#1f4e79">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="FluxoCaixa">
 </head>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/static/service-worker.js")
+        .then(() => {
+          console.log("Service Worker registrado com sucesso.");
+        })
+        .catch((error) => {
+          console.log("Erro ao registrar o Service Worker:", error);
+        });
+    });
+  }
+</script>
+
 <body>
     <header class="topo">
         <h1>Gerenciamento de Categorias</h1>
