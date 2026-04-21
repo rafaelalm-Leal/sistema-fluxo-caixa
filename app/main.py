@@ -15,9 +15,10 @@ from app.routes.pages import router as pages_router
 
 app = FastAPI()
 
+import os
 app.add_middleware(
     SessionMiddleware,
-    secret_key="troque-esta-chave-por-uma-chave-secreta-bem-forte"
+    secret_key=os.getenv("SESSION_SECRET", "chave-local-apenas-para-desenvolvimento")
 )
 
 Base.metadata.create_all(bind=engine)
@@ -39,3 +40,7 @@ def pagina_inicial(request: Request):
         return RedirectResponse(url="/dashboard", status_code=303)
     
     return RedirectResponse(url="/login", status_code=303)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
