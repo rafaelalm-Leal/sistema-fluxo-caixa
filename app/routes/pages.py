@@ -496,8 +496,6 @@ def salvar_edicao_movimentacao_page(
     usuario_logado = buscar_usuario_logado(request, db)
     if not usuario_logado:
         return RedirectResponse(url="/login", status_code=303)
-    
-    movimentacao.updated_by = usuario_logado.id
 
     movimentacao = (
         db.query(Transaction)
@@ -541,6 +539,7 @@ def salvar_edicao_movimentacao_page(
     movimentacao.categoria_id = categoria_id
     movimentacao.forma_pagamento = forma_pagamento or None
     movimentacao.observacao = observacao or None
+    movimentacao.updated_by = usuario_logado.id
 
     db.commit()
 
